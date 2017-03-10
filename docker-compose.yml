@@ -4,3 +4,5 @@ services:
     build: .
     volumes:
       - ./app:/app
+      - ${SEARCH_IMG_DIR}:/srv/search_imgs
+      - ${BASE_IMG_DIR}:/srv/base_imgs
