@@ -2,30 +2,27 @@ const cv = require("opencv")
 
 console.log("hello ioni")
 
-// console.log(cv)
+const BASE_IMAGE   = '/srv/base_imgs/base.jpg'
+const SEARCH_IMAGE = '/srv/search_imgs/search.jpg'
 
 // 検出元の画像を読み込み
-cv.readImage('/srv/base_imgs/base_img.png', function(err, im) {
+cv.readImage(BASE_IMAGE, function(err, baseImage) {
   if (err) return console.error('error loading image');
+  baseImage.convertGrayscale()
 
-  // 検出対象画像を指定して、検出元画像から検出する
-  var output = im.matchTemplate('/srv/search_imgs/search_img.png', 3);
-  console.dir(output)
-  console.log(output[0])
+  // 検出対象画像を読み込み、マッチングを行う
+  cv.readImage(SEARCH_IMAGE, function(err, searchImage) {
+    if (err) return console.error('error loading image');
+    searchImage.convertGrayscale()
 
-  // matchTemplateの結果配列から検出結果の座標とサイズを取得
-  let startX = output[1];
-  let startY = output[2];
-  let width  = output[3];
-  let height = output[4];
+    let output = baseImage.matchTemplateByMatrix(searchImage, 3);
+    let matches = output.templateMatches(0.99, 1.0, 5, false)
+    console.log(matches)
 
-  console.log("startX:" + startX)
-  console.log("startY:" + startY)
-  console.log("width:" + width)
-  console.log("height:" + height)
-
-  // 検出元画像に検出された位置をrectangleとして描画して保存する
-  let copy = im.copy()
-  copy.rectangle([startX, startY], [width, height], [0,255,0], 2)
-  copy.save('/srv/search_imgs/result.png')
+    if (matches.length > 0) {
+      console.log('match!')
+    } else {
+      console.log('unmatch!')
+    }
+  })
 });
